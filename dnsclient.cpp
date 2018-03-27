@@ -6,6 +6,7 @@
 
 DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD) : socket(io_service, {boost::asio::ip::udp::v4(),53}){
     iter=0;
+    msisdnBufSize=0;
     recvPac=0;
     sendPac=0;
     io_serviceLocal=(boost::asio::io_service*)&io_service;
@@ -13,37 +14,47 @@ DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::strin
     all_to_send=(std::vector<std::string>*)&MSISDN_FROM_BD;
     endpoint=new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("10.241.30.170"), 53);
     timer=new boost::asio::deadline_timer(io_service);
+    timer_loss=new boost::asio::deadline_timer(io_service);
+    timer->expires_from_now(boost::posix_time::microseconds(50));
+    timer_loss->expires_from_now(boost::posix_time::milliseconds(100));
+    timer_loss->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
 }
 
 void DnsClient::MNP_start_timer(){
-    timer->expires_from_now(boost::posix_time::microsec(100));
     timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
 }
 
 void DnsClient::MNP_timer_handler(const boost::system::error_code& e){
+    //printf("hello");
+    if(iter<all_to_send->size()){
+    std::string str=all_to_send->at(iter);
+    MSISDN_Conversion_by_send((char*)str.c_str());
     socket.async_send_to(boost::asio::buffer(sendBuf,bufSize),
                          *endpoint,boost::bind(&DnsClient::MNP_send_handler,
                                               this ,
                                               boost::asio::placeholders::error()));
-    printf("\nsize mass %d",all_to_send->size());
-    printf("\niter %d", iter);
-    if(iter<all_to_send->size()){
-    std::string str=all_to_send->at(iter);
     iter++;
-    MSISDN_Conversion_by_send((char*)str.c_str());
-    MNP_start_timer();
+    timer->expires_from_now(boost::posix_time::microseconds(50));
+    timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
     }
-    else if(all_to_send->size()==0){
-        printf ("\nsend pac %d", sendPac);
-        printf("\nrecive pac %d", recvPac);
-        printf("\nin buf %d",all_to_send->size());
-        io_serviceLocal->stop();
-    }
-    else{
-        printf("try");
+}
+void DnsClient::MNP_timer_loss_handler(const boost::system::error_code& e){
+    printf("\nbuffer %d", all_to_send->size());
+    if(msisdnBufSize==all_to_send->size()){
         iter=0;
         MNP_start_timer();
     }
+    if(all_to_send->size()==0) io_serviceLocal->stop();
+    msisdnBufSize=all_to_send->size();
+    timer_loss->expires_from_now(boost::posix_time::milliseconds(100));
+    timer_loss->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
+    /*if(all_to_send->size()==0){
+        io_serviceLocal->stop();
+    }
+    else{
+        iter=0;
+        MNP_start_timer();
+    }*/
 }
 
 void DnsClient::MNP_send_handler(const boost::system::error_code &e){
@@ -61,10 +72,6 @@ void DnsClient::MNP_send_handler(const boost::system::error_code &e){
 
 void DnsClient::MNP_recive_nandler(const boost::system::error_code &e){
     recvPac++;
-    /*if(recvPac>=msisdnBufSize){
-        io_serviceLocal->stop();
-    }*/
-     printf("%d recv\n",recvPac);
      struct RES_RECORD answers;
      int stop;
      char *reader = &recvBuf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)];
@@ -78,7 +85,6 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e){
      answers.rdata = ReadName(reader,recvBuf,&stop);
      reader = reader + stop;
      std::string regStr=answers.rdata;
-     printf("\n Regexp : %s",answers.rdata);
      char* ident=answers.rdata+(strlen((char*)answers.rdata)-3);
      char* mtsIdent="01!";
      if((strcmp((char*)ident,mtsIdent))==0){
@@ -97,6 +103,7 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e){
                 }
         }
      memset(recvBuf,0,512);
+     //
 }
 
 void DnsClient::MSISDN_Conversion_by_send(char *MSISDN){

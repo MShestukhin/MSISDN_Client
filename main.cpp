@@ -10,7 +10,7 @@ using namespace std;
 int main()
 {
     std::vector<std::string> *all_to_send=new std::vector<std::string>;
-    OCI_Connection* cn;
+    /*OCI_Connection* cn;
     OCI_Statement* st;
     OCI_Resultset*rs;
     OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT);
@@ -22,12 +22,12 @@ int main()
     st = OCI_StatementCreate(cn);
     OCI_Prepare(st,"select * from ES_MSISDN");
     OCI_Execute(st);
-    rs = OCI_GetResultset(st);
+    rs = OCI_GetResultset(st);*/
     int i=0;
-    while(i<100){
-    OCI_FetchNext(rs);
+    while(i<4000){
+    //OCI_FetchNext(rs);
     char str[100];
-    sprintf(str,OCI_GetString(rs,4));
+    sprintf(str,"79834077832");
     all_to_send->push_back(str);
     i++;
     }
