@@ -10,7 +10,6 @@ class DnsClient
 private:
     char sendBuf[512], recvBuf[512], *qname;
     int bufSize,iter,recvPac, sendPac,timeCounter, msisdnBufSize;
-    std::vector<std::string>* all_to_send;
     boost::asio::io_service* io_serviceLocal;
     boost::asio::deadline_timer* timer;
     boost::asio::deadline_timer* timer_loss;
@@ -18,7 +17,8 @@ private:
     boost::asio::ip::udp::socket socket;
 
 public:
-    DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD);
+    std::vector<std::string>* all_to_send, *all_to_insert;
+    DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert );
     void MNP_start_timer();
     void MNP_timer_handler(const boost::system::error_code& e);
     void MNP_timer_loss_handler(const boost::system::error_code& e);

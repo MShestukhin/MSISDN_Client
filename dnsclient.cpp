@@ -4,7 +4,7 @@
 #define T_NAPTR 35
 
 
-DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD) : socket(io_service, {boost::asio::ip::udp::v4(),53}){
+DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert) : socket(io_service, {boost::asio::ip::udp::v4(),53}){
     iter=0;
     msisdnBufSize=0;
     recvPac=0;
@@ -12,20 +12,18 @@ DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::strin
     io_serviceLocal=(boost::asio::io_service*)&io_service;
     msisdnBufSize=MSISDN_FROM_BD.size();
     all_to_send=(std::vector<std::string>*)&MSISDN_FROM_BD;
+    all_to_insert=(std::vector<std::string>*)&for_insert;
     endpoint=new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("10.241.30.170"), 53);
     timer=new boost::asio::deadline_timer(io_service);
-    timer_loss=new boost::asio::deadline_timer(io_service);
-    timer->expires_from_now(boost::posix_time::microseconds(50));
-    timer_loss->expires_from_now(boost::posix_time::milliseconds(100));
-    timer_loss->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
+    msisdnBufSize=all_to_send->size();
 }
 
 void DnsClient::MNP_start_timer(){
+    timer->expires_from_now(boost::posix_time::microseconds(250));
     timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
 }
 
 void DnsClient::MNP_timer_handler(const boost::system::error_code& e){
-    //printf("hello");
     if(iter<all_to_send->size()){
     std::string str=all_to_send->at(iter);
     MSISDN_Conversion_by_send((char*)str.c_str());
@@ -34,19 +32,23 @@ void DnsClient::MNP_timer_handler(const boost::system::error_code& e){
                                               this ,
                                               boost::asio::placeholders::error()));
     iter++;
-    timer->expires_from_now(boost::posix_time::microseconds(50));
-    timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
+    MNP_start_timer();
+    }
+    else{
+        timer->expires_from_now(boost::posix_time::microseconds(250));
+        timer->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
     }
 }
 void DnsClient::MNP_timer_loss_handler(const boost::system::error_code& e){
-    printf("\nbuffer %d", all_to_send->size());
+    //printf("\nbuffer %d", all_to_send->size());
+    //std::cout<<"\metka"<<msisdnBufSize<<"\n";
     if(msisdnBufSize==all_to_send->size()){
         iter=0;
-        MNP_start_timer();
     }
     if(all_to_send->size()==0) io_serviceLocal->stop();
     msisdnBufSize=all_to_send->size();
-    timer_loss->expires_from_now(boost::posix_time::milliseconds(100));
+    MNP_start_timer();
+    /*timer_loss->expires_from_now(boost::posix_time::milliseconds(100));
     timer_loss->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
     /*if(all_to_send->size()==0){
         io_serviceLocal->stop();
@@ -71,7 +73,7 @@ void DnsClient::MNP_send_handler(const boost::system::error_code &e){
 }
 
 void DnsClient::MNP_recive_nandler(const boost::system::error_code &e){
-    recvPac++;
+    bool mtsOr;
      struct RES_RECORD answers;
      int stop;
      char *reader = &recvBuf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)];
@@ -88,16 +90,23 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e){
      char* ident=answers.rdata+(strlen((char*)answers.rdata)-3);
      char* mtsIdent="01!";
      if((strcmp((char*)ident,mtsIdent))==0){
+         recvPac++;
+         std::cout<<recvPac<<"\n";
+         mtsOr=false;
      //printf("\n Abonent mts");
+     }
+     else{
+        mtsOr=true;
      }
      std::string::size_type n;
         for(int i=0;i<all_to_send->size();i++){
             std::string str=all_to_send->at(i);
-            //std::cout<<"\nfrome buf "<<str;
-            //std::cout<<"\nRegex"<<regStr;
             n=regStr.find(str);
             if(n!=std::string::npos){
                 //printf("\n sovp");
+                if(mtsOr){
+                    all_to_insert->push_back(all_to_send->at(i));
+                }
                 all_to_send->erase(all_to_send->begin()+i);
                 break;
                 }
