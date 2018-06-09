@@ -1,6 +1,6 @@
 #ifndef DNSSTRUCTS_H
 #define DNSSTRUCTS_H
-
+#include <iostream>
 
 struct DNS_HEADER
 {
