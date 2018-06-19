@@ -83,13 +83,11 @@ void mnp_thread()
     BOOST_LOG_SEV(lg, info) << "MNP run "<<iter<<"\n";
     boost::asio::io_service* io_service=new boost::asio::io_service;
     DnsClient client(*io_service, *all_to_send, *all_to_insert);
-    unsigned int start_time=clock();
     //while(1)
         //if(all_to_send->size()>0)
             //break;
     client.MNP_start_timer();
     io_service->run();
-    unsigned int stop_time=clock();
 }
 
 
@@ -103,6 +101,7 @@ void db_thread()
     cn1 = OCI_ConnectionCreate("sk", "svcbic", "m83hose55tcp", OCI_SESSION_DEFAULT);
     st1 = OCI_StatementCreate(cn1);
     _lock.lock();
+    std::cout<<all_to_insert->size()<<"\n";
     if(all_to_insert->size()>0)
     {
         v.assign(all_to_insert->begin(),all_to_insert->end());
@@ -163,21 +162,20 @@ void init()
     Db=new db(conf.lookup("MNP.Db.host"),
     conf.lookup("MNP.Db.user"),
     conf.lookup("MNP.Db.pswd"));
-        /*std::string log_path_str= conf.lookup("MNP.log_path");
-
-        logging::add_file_log
+    /*std::string log_path_str= conf.lookup("MNP.log_path");
+    logging::add_file_log
+    (
+        keywords::file_name =log_path_str+ "/%Y-%m-%d.log",
+                keywords::auto_flush = true ,
+        keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
+        keywords::format =
         (
-            keywords::file_name =log_path_str+ "/%Y-%m-%d.log",
-                    keywords::auto_flush = true ,
-            keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
-            keywords::format =
-            (
-                expr::stream
-                << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-                << "\t: <" << logging::trivial::severity
-                << "> \t" << expr::smessage
-            )
-        );*/
+            expr::stream
+            << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+            << "\t: <" << logging::trivial::severity
+            << "> \t" << expr::smessage
+        )
+    );*/
 }
 
 void err_handler(OCI_Error *err)
@@ -187,13 +185,7 @@ void err_handler(OCI_Error *err)
 
 int main()
 {
-    std::cout<<"hello";
-    all_to_insert=new std::vector<std::string>;
-    all_to_send=new std::vector<std::string>;
-    all_to_send->push_back("123456789");
-    boost::thread thread(&mnp_thread);
-    thread.join();
-    /*OCI_Connection* cn;
+    OCI_Connection* cn;
     OCI_Statement* st;
     OCI_Resultset*rs;
     init();
@@ -219,19 +211,18 @@ int main()
         if((all_to_send->size()%4000)==0)
         {
             boost::thread thread(&mnp_thread);
-            thread.join();
             boost::thread thread1(&db_thread);
+            thread.join();
             thread1.join();
-            //break;
         }
     }
     boost::thread thread(&mnp_thread);
-    thread.join();
     boost::thread thread1(&db_thread);
     thread1.join();
+    thread.join();
     BOOST_LOG_SEV(lg, info) << "Work with database is complete;";
     OCI_Cleanup();
     all_to_insert->clear();
-    all_to_send->clear();*/
+    all_to_send->clear();
     return 0;
 }

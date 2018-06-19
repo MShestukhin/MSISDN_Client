@@ -22,19 +22,14 @@ DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::strin
 
 void DnsClient::MNP_start_timer()
 {
-    timer->expires_from_now(boost::posix_time::microseconds(100));
+    timer->expires_from_now(boost::posix_time::microseconds(500));
     timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
 }
 
 void DnsClient::MNP_timer_handler(const boost::system::error_code& e)
 {
-    std::string str=all_to_send->at(iter);
-    MSISDN_Conversion_by_send((char*)str.c_str());
-    socket.async_send_to(boost::asio::buffer(sendBuf,bufSize),
-                         *endpoint,boost::bind(&DnsClient::MNP_send_handler,
-                                              this ,
-                                              boost::asio::placeholders::error()));
-    /*if(iter<all_to_send->size())
+
+    if(iter<all_to_send->size())
     {
     std::string str=all_to_send->at(iter);
     MSISDN_Conversion_by_send((char*)str.c_str());
@@ -49,7 +44,7 @@ void DnsClient::MNP_timer_handler(const boost::system::error_code& e)
     {
         timer->expires_from_now(boost::posix_time::microseconds(150));
         timer->async_wait(boost::bind(&DnsClient::MNP_timer_loss_handler,this,boost::asio::placeholders::error()));
-    }*/
+    }
 }
 void DnsClient::MNP_timer_loss_handler(const boost::system::error_code& e)
 {
@@ -92,31 +87,60 @@ void DnsClient::MNP_send_handler(const boost::system::error_code &e)
 
 void DnsClient::MNP_recive_nandler(const boost::system::error_code &e)
 {
-    std::cout<<"OTVET EST\n";
+    recvPac++;
     struct DNS_HEADER* dns = (struct DNS_HEADER*) recvBuf;
-    printf("\nThe response contains : ");
-    printf("\n %d Questions.",ntohs(dns->q_count));
-    printf("\n %d Answers.",ntohs(dns->ans_count));
-    printf("\n %d Authoritative Servers.",ntohs(dns->auth_count));
-    printf("\n %d Additional records.\n\n",ntohs(dns->add_count));
-    std::cout<<ntohs(dns->rcode)<<"\n";
-    //recvPac++;
-    bool mtsOr;
-     struct RES_RECORD answers;
-     int stop;
-     std::cout<<"\n";
-     char *reader = &recvBuf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)];
-     stop=0;
-     answers.name=ReadName(reader,recvBuf,&stop);
-     reader = reader + stop;
-
-     answers.resource = (struct R_DATA*)(reader);
-     reader = reader + sizeof(struct R_DATA);
-     answers.rdata = ReadName(reader,recvBuf,&stop);
-     reader = reader + stop;
-     std::cout<<answers.rdata<<"\n";
-     std::cout<<answers.resource<<"\n";
-     std::cout<<answers.name<<"\n";
+    std::string errCode;
+    struct RES_RECORD answers;
+    int stop;
+    char *reader = &recvBuf[sizeof(struct DNS_HEADER)];
+    stop=0;
+    answers.name=ReadName(reader,recvBuf,&stop);
+    reader = reader + stop;
+    answers.resource = (struct R_DATA*)(reader);
+    reader = reader + sizeof(struct R_DATA);
+    answers.rdata = ReadName(reader,recvBuf,&stop);
+    reader = reader + stop;
+    std::string query_response=answers.name;
+    std::string query_msisdn;
+    int pos=query_response.find("e164");
+    while(pos>1){
+        pos-=2;
+        query_msisdn+=query_response.at(pos);
+    }
+     for(int i=0;i<all_to_send->size();i++)
+     {
+         std::string str=all_to_send->at(i);
+         if(str==query_msisdn){
+             if(ntohs(dns->rcode)!=0){
+                 int n=ntohs(dns->rcode)/256;
+                 switch (n) {
+                 case 1:
+                     errCode=",8,Query Format Error";
+                         break;
+                 case 2:
+                     errCode=",8,Server failed to complete the DNS request";
+                         break;
+                 case 3:
+                     errCode=",8,MSISDN does not exist";
+                         break;
+                 case 4:
+                     errCode=",8,Function not implemented";
+                     break;
+                 case 5:
+                     errCode=",8,The server refused to answer for the query";
+                 default:
+                     errCode=",8,Unknown error";
+                         break;
+                 }
+                 std::string insert_str=","+all_to_send->at(i)+errCode;
+                 std::cout<<insert_str<<"\n";
+                 all_to_insert->push_back(insert_str);
+             }
+             all_to_send->erase(all_to_send->begin()+i);
+             break;
+         }
+     }
+     //std::cout<<str.at(0)<<"\n";
      /*std::string regStr=answers.rdata;
      char* ident=answers.rdata+(strlen((char*)answers.rdata)-3);
      std::cout<<ident<<"\n";
@@ -151,7 +175,6 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e)
 
 void DnsClient::MSISDN_Conversion_by_send(char *MSISDN)
 {
-    std::cout<<MSISDN<<"\n";
     char* host;
     int i;
     int sizeNumber=strlen((char*)MSISDN);
