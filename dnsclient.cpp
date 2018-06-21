@@ -22,13 +22,12 @@ DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::strin
 
 void DnsClient::MNP_start_timer()
 {
-    timer->expires_from_now(boost::posix_time::microseconds(500));
+    timer->expires_from_now(boost::posix_time::microseconds(100));
     timer->async_wait(boost::bind(&DnsClient::MNP_timer_handler,this,boost::asio::placeholders::error()));
 }
 
 void DnsClient::MNP_timer_handler(const boost::system::error_code& e)
 {
-
     if(iter<all_to_send->size())
     {
     std::string str=all_to_send->at(iter);
@@ -129,7 +128,7 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e)
                  case 5:
                      errCode=",8,The server refused to answer for the query";
                  default:
-                     errCode=",8,Unknown error";
+                     errCode=",9, MNP check erro";
                          break;
                  }
                  std::string insert_str=","+all_to_send->at(i)+errCode;

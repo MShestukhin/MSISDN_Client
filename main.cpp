@@ -83,9 +83,6 @@ void mnp_thread()
     BOOST_LOG_SEV(lg, info) << "MNP run "<<iter<<"\n";
     boost::asio::io_service* io_service=new boost::asio::io_service;
     DnsClient client(*io_service, *all_to_send, *all_to_insert);
-    //while(1)
-        //if(all_to_send->size()>0)
-            //break;
     client.MNP_start_timer();
     io_service->run();
 }
@@ -146,8 +143,6 @@ void db_thread()
     OCI_Commit(cn1);
     OCI_StatementFree(st1);
     OCI_ConnectionFree(cn1);
-    //}
-    //OCI_Cleanup();
 }
 
 void init()
@@ -162,7 +157,7 @@ void init()
     Db=new db(conf.lookup("MNP.Db.host"),
     conf.lookup("MNP.Db.user"),
     conf.lookup("MNP.Db.pswd"));
-    /*std::string log_path_str= conf.lookup("MNP.log_path");
+    std::string log_path_str= conf.lookup("MNP.log_path");
     logging::add_file_log
     (
         keywords::file_name =log_path_str+ "/%Y-%m-%d.log",
@@ -175,7 +170,7 @@ void init()
             << "\t: <" << logging::trivial::severity
             << "> \t" << expr::smessage
         )
-    );*/
+    );
 }
 
 void err_handler(OCI_Error *err)
@@ -216,10 +211,12 @@ int main()
             thread1.join();
         }
     }
-    boost::thread thread(&mnp_thread);
-    boost::thread thread1(&db_thread);
-    thread1.join();
-    thread.join();
+    if(all_to_send->size()>0){
+        boost::thread thread(&mnp_thread);
+        boost::thread thread1(&db_thread);
+        thread1.join();
+        thread.join();
+    }
     BOOST_LOG_SEV(lg, info) << "Work with database is complete;";
     OCI_Cleanup();
     all_to_insert->clear();
