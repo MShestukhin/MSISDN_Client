@@ -30,14 +30,14 @@ void DnsClient::MNP_timer_handler(const boost::system::error_code& e)
 {
     if(iter<all_to_send->size())
     {
-    std::string str=all_to_send->at(iter);
-    MSISDN_Conversion_by_send((char*)str.c_str());
-    socket.async_send_to(boost::asio::buffer(sendBuf,bufSize),
-                         *endpoint,boost::bind(&DnsClient::MNP_send_handler,
-                                              this ,
-                                              boost::asio::placeholders::error()));
-    iter++;
-    MNP_start_timer();
+        std::string str=all_to_send->at(iter);
+        MSISDN_Conversion_by_send((char*)str.c_str());
+        socket.async_send_to(boost::asio::buffer(sendBuf,bufSize),
+                             *endpoint,boost::bind(&DnsClient::MNP_send_handler,
+                                                  this ,
+                                                  boost::asio::placeholders::error()));
+        iter++;
+        MNP_start_timer();
     }
     else
     {
@@ -72,8 +72,7 @@ void DnsClient::MNP_timer_loss_handler(const boost::system::error_code& e)
 
 void DnsClient::MNP_send_handler(const boost::system::error_code &e)
 {
-    if(!e)
-    {
+    if(!e){
     socket.async_receive_from(boost::asio::buffer(recvBuf,512),*endpoint,
                               boost::bind(&DnsClient::MNP_recive_nandler,
                               this , boost::asio::placeholders::error()));
@@ -106,70 +105,40 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e)
         pos-=2;
         query_msisdn+=query_response.at(pos);
     }
-     for(int i=0;i<all_to_send->size();i++)
-     {
-         std::string str=all_to_send->at(i);
-         if(str==query_msisdn){
-             if(ntohs(dns->rcode)!=0){
-                 int n=ntohs(dns->rcode)/256;
-                 switch (n) {
-                 case 1:
-                     errCode=",8,Query Format Error";
-                         break;
-                 case 2:
-                     errCode=",8,Server failed to complete the DNS request";
-                         break;
-                 case 3:
-                     errCode=",8,MSISDN does not exist";
-                         break;
-                 case 4:
-                     errCode=",8,Function not implemented";
-                     break;
-                 case 5:
-                     errCode=",8,The server refused to answer for the query";
-                 default:
-                     errCode=",9, MNP check erro";
-                         break;
-                 }
-                 std::string insert_str=","+all_to_send->at(i)+errCode;
-                 std::cout<<insert_str<<"\n";
-                 all_to_insert->push_back(insert_str);
-             }
-             all_to_send->erase(all_to_send->begin()+i);
-             break;
-         }
-     }
-     //std::cout<<str.at(0)<<"\n";
-     /*std::string regStr=answers.rdata;
-     char* ident=answers.rdata+(strlen((char*)answers.rdata)-3);
-     std::cout<<ident<<"\n";
-     char* mtsIdent="01!";
-     if((strcmp((char*)ident,mtsIdent))==0)
-         mtsOr=false;
-     else
-         mtsOr=true;
-     std::string::size_type n;
-        for(int i=0;i<all_to_send->size();i++)
-        {
-            std::string str=all_to_send->at(i);
-            n=regStr.find(str);
-            if(n!=std::string::npos)
-            {
-                if(mtsOr)
-                {
-                    std::string insert_str=","+all_to_send->at(i)+",2, NULL";
-                    //all_to_insert->push_back(insert_str);
+    for(int i=0;i<all_to_send->size();i++)
+    {
+        std::string str=all_to_send->at(i);
+        if(str==query_msisdn){
+            if(ntohs(dns->rcode)!=0){
+                int n=ntohs(dns->rcode)/256;
+                switch (n){
+                case 1:
+                    errCode=",8,Query Format Error";
+                        break;
+                case 2:
+                    errCode=",8,Server failed to complete the DNS request";
+                        break;
+                case 3:
+                    errCode=",8,MSISDN does not exist";
+                        break;
+                case 4:
+                    errCode=",8,Function not implemented";
+                    break;
+                case 5:
+                    errCode=",8,The server refused to answer for the query";
+                default:
+                    errCode=",9, MNP check erro";
+                        break;
                 }
-                else
-                {
-                    std::string insert_str=","+all_to_send->at(i)+",0, NULL";
-                    //all_to_insert->push_back(insert_str);
-                }
-                all_to_send->erase(all_to_send->begin()+i);
-                break;
+                std::string insert_str=","+all_to_send->at(i)+errCode;
+                std::cout<<insert_str<<"\n";
+                all_to_insert->push_back(insert_str);
             }
-        }*/
-     memset(recvBuf,0,512);
+            all_to_send->erase(all_to_send->begin()+i);
+            break;
+        }
+    }
+    memset(recvBuf,0,512);
 }
 
 void DnsClient::MSISDN_Conversion_by_send(char *MSISDN)
@@ -245,7 +214,7 @@ char* DnsClient::ReadName(char* reader,char* buffer,int* count)
             jumped = 1; //we have jumped to another location so counting wont go up!
         else
             name[p++]=*reader;
-        reader = reader+1;
+            reader = reader+1;
         if(jumped==0)
             *count = *count + 1; //if we havent jumped to another location then we can count up
     }

@@ -95,7 +95,7 @@ void db_thread()
     OCI_Statement* st1;
     OCI_Error      *err;
     OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT);
-    cn1 = OCI_ConnectionCreate("sk", "svcbic", "m83hose55tcp", OCI_SESSION_DEFAULT);
+    cn1 = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
     st1 = OCI_StatementCreate(cn1);
     _lock.lock();
     std::cout<<all_to_insert->size()<<"\n";
@@ -149,11 +149,11 @@ void init()
 {
     libconfig::Config conf;
     try{
-            conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
-        }
+        conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
+    }
     catch(libconfig::ParseException e){
-             BOOST_LOG_SEV(lg, fatal) << e.getError() << " line:" << e.getLine() << std::endl;
-        }
+        BOOST_LOG_SEV(lg, fatal) << e.getError() << " line:" << e.getLine() << std::endl;
+    }
     Db=new db(conf.lookup("MNP.Db.host"),
     conf.lookup("MNP.Db.user"),
     conf.lookup("MNP.Db.pswd"));
