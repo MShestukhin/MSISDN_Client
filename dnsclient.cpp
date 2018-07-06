@@ -55,7 +55,7 @@ void DnsClient::MNP_timer_loss_handler(const boost::system::error_code& e)
         {
             for(int i=0; i<all_to_send->size(); i++)
             {
-                std::string insert_str=","+all_to_send->at(i)+",9, MNP check erro";
+                std::string insert_str=","+all_to_send->at(i)+",9, MNP check error";
                 all_to_insert->push_back(insert_str);
                 all_to_send->erase(all_to_send->begin()+i);
             }
@@ -127,7 +127,7 @@ void DnsClient::MNP_recive_nandler(const boost::system::error_code &e)
                 case 5:
                     errCode=",8,The server refused to answer for the query";
                 default:
-                    errCode=",9, MNP check erro";
+                    errCode=",9, MNP check error";
                         break;
                 }
                 std::string insert_str=","+all_to_send->at(i)+errCode;

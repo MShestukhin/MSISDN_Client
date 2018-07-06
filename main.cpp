@@ -149,7 +149,8 @@ void init()
 {
     libconfig::Config conf;
     try{
-        conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
+        //conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
+        conf.readFile("./MSISDN_Client.conf");
     }
     catch(libconfig::ParseException e){
         BOOST_LOG_SEV(lg, fatal) << e.getError() << " line:" << e.getLine() << std::endl;
@@ -187,7 +188,9 @@ int main()
     BOOST_LOG_SEV(lg, info) << "Run MNP module;";
     all_to_insert=new std::vector<std::string>;
     all_to_send=new std::vector<std::string>;
-    OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT);
+    if(!OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT)){
+        return EXIT_FAILURE;
+    }
     cn = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
     BOOST_LOG_SEV(lg, info) <<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
     BOOST_LOG_SEV(lg, info) <<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
