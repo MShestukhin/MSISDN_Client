@@ -17,7 +17,7 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/thread.hpp>
 #include <libconfig.h++>
-
+#include "lib/occi.h"
 #define SIZE_ARRAY 100
 #define NB_LOAD    10
 #define SIZE_COL1  20
@@ -41,7 +41,7 @@ std::vector<std::string> *all_to_send;
 std::vector<std::string> *all_to_insert;
 char file_id[100];
 int iter;
-
+int flag;
 struct db
 {
     string host;
@@ -82,6 +82,8 @@ void mnp_thread()
 {
     BOOST_LOG_SEV(lg, info) << "MNP run "<<iter<<"\n";
     boost::asio::io_service* io_service=new boost::asio::io_service;
+    if(all_to_send->size()==0)
+        flag=1;
     DnsClient client(*io_service, *all_to_send, *all_to_insert);
     client.MNP_start_timer();
     io_service->run();
@@ -134,6 +136,7 @@ void db_thread()
             {
                 BOOST_LOG_SEV(lg, error) <<"Error at row "<< OCI_ErrorGetRow(err)<< " : "<<OCI_ErrorGetString(err);
                 err = OCI_GetBatchError(st1);
+                flag=2;
             }
         }
     }
@@ -149,8 +152,7 @@ void init()
 {
     libconfig::Config conf;
     try{
-        //conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
-        conf.readFile("./MSISDN_Client.conf");
+        conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
     }
     catch(libconfig::ParseException e){
         BOOST_LOG_SEV(lg, fatal) << e.getError() << " line:" << e.getLine() << std::endl;
@@ -181,6 +183,7 @@ void err_handler(OCI_Error *err)
 
 int main()
 {
+    flag=0;
     OCI_Connection* cn;
     OCI_Statement* st;
     OCI_Resultset*rs;
@@ -212,6 +215,9 @@ int main()
             boost::thread thread1(&db_thread);
             thread.join();
             thread1.join();
+            if(flag!=0){
+                return flag;
+            }
         }
     }
     if(all_to_send->size()>0){

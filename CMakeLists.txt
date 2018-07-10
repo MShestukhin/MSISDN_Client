@@ -14,23 +14,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 add_library(libconfig STATIC IMPORTED)
-set_target_properties(libconfig PROPERTIES IMPORTED_LOCATION /usr/local/lib/libconfig++.a)
-
-add_library(libnnz11 STATIC IMPORTED)
-set_target_properties(libnnz11 PROPERTIES IMPORTED_LOCATION /usr/local/lib/instantclient_11_2/libnnz11.so)
+set_target_properties(libconfig PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libconfig++.a)
 
 add_library(libclntsh SHARED IMPORTED)
-set_target_properties(libclntsh PROPERTIES IMPORTED_LOCATION /usr/local/lib/instantclient_11_2/libclntsh.so.11.1)
-
-add_library(libociei STATIC IMPORTED)
-set_target_properties(libociei PROPERTIES IMPORTED_LOCATION /usr/local/lib/instantclient_11_2/libociei.so)
+set_target_properties(libclntsh PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libclntsh.so.11.1)
 
 add_library(libocilib STATIC IMPORTED)
-set_target_properties(libocilib PROPERTIES IMPORTED_LOCATION /usr/local/lib/libocilib.a)
+set_target_properties(libocilib PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libocilib.a)
 
 target_link_libraries(MNP_Client libocilib)
-target_link_libraries(MNP_Client libnnz11)
 target_link_libraries(MNP_Client libclntsh)
-target_link_libraries(MNP_Client libociei)
 target_link_libraries(MNP_Client ${Boost_LIBRARIES})
 target_link_libraries(MNP_Client libconfig)

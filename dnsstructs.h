@@ -41,8 +41,6 @@ struct R_DATA
     unsigned short regLen;
     unsigned char reg;
 };
-#pragma pack(pop)
-
 //Pointers to resource record contents
 struct RES_RECORD
 {
