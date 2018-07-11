@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include "dnsclient.h"
-#include <ocilib.h>
+//#include <ocilib.h>
 #include <vector>
 #include <map>
 #include <time.h>
@@ -17,7 +17,8 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/thread.hpp>
 #include <libconfig.h++>
-#include "lib/occi.h"
+#include "includes/occi.h"
+#include "includes/ocilib.h"
 #define SIZE_ARRAY 100
 #define NB_LOAD    10
 #define SIZE_COL1  20
