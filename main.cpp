@@ -1,6 +1,6 @@
 // Version:1.0 Date:12.07.2018 #
 // Author: Shestukhin Maxim
-// Email: shist95@svyazcom.ru
+// Email: shestukhin@svyazcom.ru
 #include <iostream>
 #include <boost/asio.hpp>
 #include "dnsclient.h"
