@@ -179,52 +179,53 @@ void err_handler(OCI_Error *err)
 
 int main()
 {
-    flag=0;
-    OCI_Connection* cn;
-    OCI_Statement* st;
-    OCI_Resultset*rs;
-    init();
-    //BOOST_LOG_SEV(lg, info) << "Run MNP module;";
-    all_to_insert=new std::vector<std::string>;
-    all_to_send=new std::vector<std::string>;
-    if(!OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT)){
-        return EXIT_FAILURE;
-    }
-    cn = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
-//    BOOST_LOG_SEV(lg, info) <<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Connection      version : "<< OCI_GetVersionConnection(cn);
-    st = OCI_StatementCreate(cn);
-    OCI_Prepare(st,"select * from FTP_ES_MSISDN");
-    OCI_Execute(st);
-    rs = OCI_GetResultset(st);
-    while(OCI_FetchNext(rs))
-    {
-        sprintf(file_id,OCI_GetString(rs,1));
-        char str[100];
-        sprintf(str,OCI_GetString(rs,2));
-        all_to_send->push_back(str);
-        if((all_to_send->size()%4000)==0)
-        {
-            boost::thread thread(&mnp_thread);
-            boost::thread thread1(&db_thread);
-            thread.join();
-            thread1.join();
-            if(flag!=0){
-                return flag;
-            }
-        }
-    }
-    if(all_to_send->size()>0){
-        boost::thread thread(&mnp_thread);
-        boost::thread thread1(&db_thread);
-        thread1.join();
-        thread.join();
-    }
-    //BOOST_LOG_SEV(lg, info) << "Work with database is complete;";
-    OCI_Cleanup();
-    all_to_insert->clear();
-    all_to_send->clear();
+    std::cout<<5/0<<"\n";
+//    flag=0;
+//    OCI_Connection* cn;
+//    OCI_Statement* st;
+//    OCI_Resultset*rs;
+//    init();
+//    //BOOST_LOG_SEV(lg, info) << "Run MNP module;";
+//    all_to_insert=new std::vector<std::string>;
+//    all_to_send=new std::vector<std::string>;
+//    if(!OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT)){
+//        return EXIT_FAILURE;
+//    }
+//    cn = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
+////    BOOST_LOG_SEV(lg, info) <<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
+////    BOOST_LOG_SEV(lg, info) <<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
+////    BOOST_LOG_SEV(lg, info) <<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
+////    BOOST_LOG_SEV(lg, info) <<"Connection      version : "<< OCI_GetVersionConnection(cn);
+//    st = OCI_StatementCreate(cn);
+//    OCI_Prepare(st,"select * from FTP_ES_MSISDN");
+//    OCI_Execute(st);
+//    rs = OCI_GetResultset(st);
+//    while(OCI_FetchNext(rs))
+//    {
+//        sprintf(file_id,OCI_GetString(rs,1));
+//        char str[100];
+//        sprintf(str,OCI_GetString(rs,2));
+//        all_to_send->push_back(str);
+//        if((all_to_send->size()%4000)==0)
+//        {
+//            boost::thread thread(&mnp_thread);
+//            boost::thread thread1(&db_thread);
+//            thread.join();
+//            thread1.join();
+//            if(flag!=0){
+//                return flag;
+//            }
+//        }
+//    }
+//    if(all_to_send->size()>0){
+//        boost::thread thread(&mnp_thread);
+//        boost::thread thread1(&db_thread);
+//        thread1.join();
+//        thread.join();
+//    }
+//    //BOOST_LOG_SEV(lg, info) << "Work with database is complete;";
+//    OCI_Cleanup();
+//    all_to_insert->clear();
+//    all_to_send->clear();
     return 0;
 }
