@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
-#include <libconfig.h++>
+#include "includes/libconfig.h++"
 #include "includes/occi.h"
 #include "includes/ocilib.h"
 #define SIZE_ARRAY 100
