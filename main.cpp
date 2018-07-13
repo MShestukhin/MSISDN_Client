@@ -76,7 +76,7 @@ vector<string> split(string str,char delimitr)
 
 void mnp_thread()
 {
-    //BOOST_LOG_SEV(lg, info) << "MNP run "<<iter<<"\n";
+    std::cout << "MNP run "<<iter<<"\n";
     boost::asio::io_service* io_service=new boost::asio::io_service;
     if(all_to_send->size()==0)
         flag=1;
@@ -113,7 +113,6 @@ void db_thread()
         OCI_BindArrayOfStrings(st1, ":msisdn", (char*)tab_str, 100, 0);
         OCI_BindArrayOfInts(st1, ":res", (int*)tab_res, 0);
         OCI_BindArrayOfStrings(st1, ":err", (char*)tab_err, 100, 0);
-        std::cout<<n<<"\n";
         for(int i=0;i<n;i++)
         {
             std::string str=std::string(file_id)+v.at(i);
@@ -126,11 +125,11 @@ void db_thread()
         v.clear();
         if (!OCI_Execute(st1))
         {
-            //BOOST_LOG_SEV(lg, error) <<"Number of DML array errors : "<<OCI_GetBatchErrorCount(st1);
+            std::cout <<"Number of DML array errors : "<<OCI_GetBatchErrorCount(st1);
             err = OCI_GetBatchError(st1);
             while (err)
             {
-                //BOOST_LOG_SEV(lg, error) <<"Error at row "<< OCI_ErrorGetRow(err)<< " : "<<OCI_ErrorGetString(err);
+                std::cout <<"Error at row "<< OCI_ErrorGetRow(err)<< " : "<<OCI_ErrorGetString(err);
                 err = OCI_GetBatchError(st1);
                 flag=2;
             }
@@ -138,7 +137,7 @@ void db_thread()
     }
     else
         _lock.unlock();
-    //BOOST_LOG_SEV(lg, info) <<"row inserted : "<<OCI_GetAffectedRows(st1);
+    std::cout <<"row inserted : "<<OCI_GetAffectedRows(st1);
     OCI_Commit(cn1);
     OCI_StatementFree(st1);
     OCI_ConnectionFree(cn1);
@@ -151,7 +150,7 @@ void init()
         conf.readFile("/home/bic/bic-ftp/etc/MSISDN_Client.conf");
     }
     catch(libconfig::ParseException e){
-        //BOOST_LOG_SEV(lg, fatal) << e.getError() << " line:" << e.getLine() << std::endl;
+        std::cout << e.getError() << " line:" << e.getLine() << std::endl;
     }
     Db=new db(conf.lookup("MNP.Db.host"),
     conf.lookup("MNP.Db.user"),
@@ -184,17 +183,17 @@ int main()
    OCI_Statement* st;
    OCI_Resultset*rs;
    init();
-   //BOOST_LOG_SEV(lg, info) << "Run MNP module;";
+   std::cout << "Run MNP module;";
    all_to_insert=new std::vector<std::string>;
    all_to_send=new std::vector<std::string>;
    if(!OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT)){
        return EXIT_FAILURE;
    }
    cn = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
-//    BOOST_LOG_SEV(lg, info) <<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
-//    BOOST_LOG_SEV(lg, info) <<"Connection      version : "<< OCI_GetVersionConnection(cn);
+    std::cout<<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
+    std::cout<<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
+    std::cout<<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
+    std::cout<<"Connection      version : "<< OCI_GetVersionConnection(cn);
    st = OCI_StatementCreate(cn);
    OCI_Prepare(st,"select * from FTP_ES_MSISDN");
    OCI_Execute(st);
@@ -222,9 +221,10 @@ int main()
        thread1.join();
        thread.join();
    }
-   //BOOST_LOG_SEV(lg, info) << "Work with database is complete;";
+   std::cout << "Work with database is complete;";
    OCI_Cleanup();
    all_to_insert->clear();
    all_to_send->clear();
-    return 0;
+   std::cout<<flag<<"\n";
+    return flag;
 }
