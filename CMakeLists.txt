@@ -9,7 +9,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package(Boost COMPONENTS system log thread filesystem REQUIRED)
+find_package(Boost COMPONENTS system thread REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
