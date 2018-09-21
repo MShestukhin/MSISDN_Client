@@ -14,7 +14,7 @@ struct DNS_HEADER
 
     char rcode :4; // response code
     char ad :1; // authenticated data
-    char z :1; // its z! reserved
+    //char z :1; // its z! reserved
 
     short q_count; // number of question entries
     short ans_count; // number of answer entries

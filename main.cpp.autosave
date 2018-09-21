@@ -247,13 +247,14 @@ int main()
    all_to_insert=new std::vector<std::string>;
    all_to_send=new std::vector<std::string>;
    if(!OCI_Initialize(NULL, NULL, OCI_ENV_DEFAULT)){
+       LOGE<<"Initialize error bd "<<EXIT_FAILURE;
        return EXIT_FAILURE;
    }
    cn = OCI_ConnectionCreate(Db->host.c_str(), Db->user.c_str(), Db->password.c_str(), OCI_SESSION_DEFAULT);
-    std::cout<<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
-    std::cout<<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
-    std::cout<<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
-    std::cout<<"Connection      version : "<< OCI_GetVersionConnection(cn);
+    LOGI<<"Server major    version : "<< OCI_GetServerMajorVersion(cn);
+    LOGI<<"Server minor    version : "<< OCI_GetServerMinorVersion(cn);
+    LOGI<<"Server revision version : "<< OCI_GetServerRevisionVersion(cn);
+    LOGI<<"Connection      version : "<< OCI_GetVersionConnection(cn);
    st = OCI_StatementCreate(cn);
    OCI_Prepare(st,"select * from FTP_ES_MSISDN");
    OCI_Execute(st);

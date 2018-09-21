@@ -1,0 +1,1 @@
+/usr/bin/c++  -lrt -pthread  -g  -rdynamic CMakeFiles/MNP_Client.dir/dnsclient.cpp.o CMakeFiles/MNP_Client.dir/main.cpp.o  -o MNP_Client -Wl,-rpath,/home/maxim/Documents/MSISDN_Client/lib ../lib/libocilib.a ../lib/libclntsh.so.11.1 -Wl,-Bstatic -lboost_system -lboost_thread -lboost_chrono -lboost_date_time -lboost_atomic ../lib/libconfig++.a -Wl,-Bdynamic 
