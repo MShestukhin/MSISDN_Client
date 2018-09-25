@@ -15,7 +15,6 @@
 #include "includes/occi.h"
 #include "includes/ocilib.h"
 #include <fstream>
-#include <plog/Log.h>
 #define SIZE_ARRAY 100
 #define NB_LOAD    10
 #define SIZE_COL1  20
@@ -25,14 +24,6 @@
 #define ARRAY_SIZE 1
 #define STRING_SIZE 20
 
-//namespace logging = boost::log;
-//namespace sinks = boost::log::sinks;
-//namespace src = boost::log::sources;
-//namespace expr = boost::log::expressions;
-//namespace attrs = boost::log::attributes;
-//namespace keywords = boost::log::keywords;
-//using namespace logging::trivial;
-//src::severity_logger< severity_level > lg;
 using namespace std;
 boost::mutex _lock;
 std::vector<std::string> *all_to_send;
@@ -110,7 +101,7 @@ void mnp_thread()
     boost::asio::io_service* io_service=new boost::asio::io_service;
     if(all_to_send->size()==0)
         flag=1;
-    DnsClient client(*io_service, *all_to_send, *all_to_insert);
+    DnsClient client(MNP_host, *io_service, *all_to_send, *all_to_insert);
     client.MNP_start_timer();
     io_service->run();
 }
@@ -205,8 +196,6 @@ void init()
           log_pth=split(str,"=").at(1);
       }
     }
-    string fileLogName=log_pth+"/"+currentDateTime()+".log";
-    plog::init(plog::debug, fileLogName.c_str(), 1300000, 10);
     OCI_Connection* cn;
     OCI_Statement* st;
     OCI_Resultset*rs;

@@ -4,7 +4,7 @@
 #define T_NAPTR 35
 
 
-DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert) : socket(io_service, {boost::asio::ip::udp::v4(),53})
+DnsClient::DnsClient(std::string host, boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert) : socket(io_service, {boost::asio::ip::udp::v4(),53})
 {
     iter=0;
     msisdnBufSize=0;
@@ -15,7 +15,7 @@ DnsClient::DnsClient(boost::asio::io_service &io_service, std::vector<std::strin
     msisdnBufSize=MSISDN_FROM_BD.size();
     all_to_send=(std::vector<std::string>*)&MSISDN_FROM_BD;
     all_to_insert=(std::vector<std::string>*)&for_insert;
-    endpoint=new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("10.241.30.171"), 53);
+    endpoint=new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(host), 53);
     timer=new boost::asio::deadline_timer(io_service);
     msisdnBufSize=all_to_send->size();
 }

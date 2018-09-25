@@ -18,7 +18,7 @@ private:
 
 public:
     std::vector<std::string>* all_to_send, *all_to_insert;
-    DnsClient(boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert );
+    DnsClient(std::string host,boost::asio::io_service &io_service, std::vector<std::string> &MSISDN_FROM_BD, std::vector<std::string> &for_insert );
     void MNP_start_timer();
     void MNP_timer_handler(const boost::system::error_code& e);
     void MNP_timer_loss_handler(const boost::system::error_code& e);
